@@ -1,7 +1,13 @@
+-- PlayBoard Database Schema
+-- Run this in the Supabase SQL Editor to set up the database
+
 -- Enable UUID extension
 create extension if not exists "uuid-ossp";
 
--- Team members
+-- ============================================================
+-- Tables
+-- ============================================================
+
 create table team_members (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid references auth.users(id) on delete cascade,
@@ -11,7 +17,6 @@ create table team_members (
   created_at timestamptz default now()
 );
 
--- Labels
 create table labels (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid references auth.users(id) on delete cascade,
@@ -20,7 +25,6 @@ create table labels (
   created_at timestamptz default now()
 );
 
--- Tasks
 create table tasks (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid references auth.users(id) on delete cascade,
@@ -36,21 +40,18 @@ create table tasks (
   updated_at timestamptz default now()
 );
 
--- Task <-> Assignee junction
 create table task_assignees (
   task_id uuid references tasks(id) on delete cascade,
   member_id uuid references team_members(id) on delete cascade,
   primary key (task_id, member_id)
 );
 
--- Task <-> Label junction
 create table task_labels (
   task_id uuid references tasks(id) on delete cascade,
   label_id uuid references labels(id) on delete cascade,
   primary key (task_id, label_id)
 );
 
--- Comments
 create table comments (
   id uuid primary key default uuid_generate_v4(),
   task_id uuid references tasks(id) on delete cascade,
@@ -59,7 +60,6 @@ create table comments (
   created_at timestamptz default now()
 );
 
--- Activity log
 create table activity_log (
   id uuid primary key default uuid_generate_v4(),
   task_id uuid references tasks(id) on delete cascade,
@@ -69,7 +69,10 @@ create table activity_log (
   created_at timestamptz default now()
 );
 
--- RLS: Enable on all tables
+-- ============================================================
+-- Row Level Security
+-- ============================================================
+
 alter table tasks enable row level security;
 alter table team_members enable row level security;
 alter table labels enable row level security;
@@ -78,51 +81,64 @@ alter table activity_log enable row level security;
 alter table task_assignees enable row level security;
 alter table task_labels enable row level security;
 
--- RLS Policies
+-- Optimized RLS policies: (select auth.uid()) avoids per-row re-evaluation
 create policy "Users own their tasks"
-  on tasks for all using (auth.uid() = user_id);
+  on tasks for all using ((select auth.uid()) = user_id);
 
 create policy "Users own their team members"
-  on team_members for all using (auth.uid() = user_id);
+  on team_members for all using ((select auth.uid()) = user_id);
 
 create policy "Users own their labels"
-  on labels for all using (auth.uid() = user_id);
+  on labels for all using ((select auth.uid()) = user_id);
 
 create policy "Users own their comments"
-  on comments for all using (auth.uid() = user_id);
+  on comments for all using ((select auth.uid()) = user_id);
 
 create policy "Users own their activity"
-  on activity_log for all using (auth.uid() = user_id);
+  on activity_log for all using ((select auth.uid()) = user_id);
 
 create policy "task_assignees via task owner"
   on task_assignees for all using (
     exists (select 1 from tasks where tasks.id = task_id
-            and tasks.user_id = auth.uid())
+            and tasks.user_id = (select auth.uid()))
   );
 
 create policy "task_labels via task owner"
   on task_labels for all using (
     exists (select 1 from tasks where tasks.id = task_id
-            and tasks.user_id = auth.uid())
+            and tasks.user_id = (select auth.uid()))
   );
 
--- Auto-update updated_at on tasks
+-- ============================================================
+-- Trigger: auto-update updated_at
+-- ============================================================
+
 create or replace function update_updated_at()
 returns trigger as $$
 begin
   new.updated_at = now();
   return new;
 end;
-$$ language plpgsql;
+$$ language plpgsql
+set search_path = '';
 
 create trigger tasks_updated_at
   before update on tasks
   for each row execute function update_updated_at();
 
+-- ============================================================
 -- Performance indexes
+-- ============================================================
+
 create index tasks_user_id_status_idx on tasks(user_id, status);
 create index tasks_due_date_idx on tasks(due_date) where due_date is not null;
 create index comments_task_id_idx on comments(task_id);
+create index comments_user_id_idx on comments(user_id);
 create index activity_log_task_id_idx on activity_log(task_id);
+create index activity_log_user_id_idx on activity_log(user_id);
 create index task_assignees_task_id_idx on task_assignees(task_id);
+create index task_assignees_member_id_idx on task_assignees(member_id);
 create index task_labels_task_id_idx on task_labels(task_id);
+create index task_labels_label_id_idx on task_labels(label_id);
+create index labels_user_id_idx on labels(user_id);
+create index team_members_user_id_idx on team_members(user_id);
