@@ -99,7 +99,38 @@ export function useCreateTask() {
 
       return data
     },
-    onSuccess: () => {
+    onMutate: async (input) => {
+      await queryClient.cancelQueries({ queryKey: ['tasks'] })
+      const previous = queryClient.getQueryData<TaskWithRelations[]>(['tasks'])
+
+      const optimisticTask: TaskWithRelations = {
+        id: `temp-${Date.now()}`,
+        user_id: '',
+        title: input.title,
+        description: input.description ?? null,
+        status: input.status,
+        priority: input.priority ?? 'normal',
+        due_date: input.due_date ?? null,
+        position: input.position ?? 0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        assignees: [],
+        labels: [],
+      }
+
+      queryClient.setQueryData<TaskWithRelations[]>(['tasks'], (old) => [
+        ...(old ?? []),
+        optimisticTask,
+      ])
+
+      return { previous }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['tasks'], context.previous)
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] })
     },
   })

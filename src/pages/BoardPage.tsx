@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 
 import { KanbanBoard } from '@/components/board/KanbanBoard'
 import { Header } from '@/components/layout/Header'
+import { OfflineBanner } from '@/components/layout/OfflineBanner'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useBoardStore } from '@/store/boardStore'
 
@@ -14,6 +15,7 @@ export function BoardPage() {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
+      <OfflineBanner />
       <Header />
       <main className="flex-1 overflow-hidden">
         <KanbanBoard />
