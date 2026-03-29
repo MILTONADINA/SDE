@@ -19,23 +19,24 @@ _Add screenshots here after deployment._
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | React 19 + TypeScript (strict mode) |
-| Build | Vite 8 |
-| Styling | Tailwind CSS v4 with custom dark theme |
-| Drag & Drop | @dnd-kit/core + @dnd-kit/sortable |
-| Client State | Zustand |
+| Layer        | Technology                                              |
+| ------------ | ------------------------------------------------------- |
+| Framework    | React 19 + TypeScript (strict mode)                     |
+| Build        | Vite 8                                                  |
+| Styling      | Tailwind CSS v4 with custom dark theme                  |
+| Drag & Drop  | @dnd-kit/core + @dnd-kit/sortable                       |
+| Client State | Zustand                                                 |
 | Server State | TanStack Query (optimistic updates, cache invalidation) |
-| Backend | Supabase (PostgreSQL + Auth + Row Level Security) |
-| Icons | Lucide React |
-| Testing | Vitest + Testing Library + Playwright |
-| CI/CD | GitHub Actions (6 workflows) |
-| Hosting | Vercel |
+| Backend      | Supabase (PostgreSQL + Auth + Row Level Security)       |
+| Icons        | Lucide React                                            |
+| Testing      | Vitest + Testing Library + Playwright                   |
+| CI/CD        | GitHub Actions (6 workflows)                            |
+| Hosting      | Vercel                                                  |
 
 ## Features
 
 ### Board
+
 - **4-column Kanban layout** — To Do, In Progress, In Review, Done
 - **Drag-and-drop** with smooth animations and optimistic updates
 - **Inline task creation** at the bottom of each column
@@ -43,6 +44,7 @@ _Add screenshots here after deployment._
 - **Due date badges** — green (future), yellow (within 2 days), red (overdue)
 
 ### Task Detail Panel
+
 - Slide-in panel with full task editing
 - Inline title editing (click to edit)
 - Status, priority, and due date selectors
@@ -53,6 +55,7 @@ _Add screenshots here after deployment._
 - Auto-generated activity timeline
 
 ### Collaboration
+
 - **Team members** — Add members with name and color, assign to tasks
 - **Labels** — Create custom colored labels, assign to tasks, filter by label
 - **Search** — Real-time title search across all columns
@@ -60,12 +63,14 @@ _Add screenshots here after deployment._
 - **Board stats** — Task count, completion rate, overdue count with progress bar
 
 ### Security
+
 - **Anonymous guest auth** — Supabase anonymous sign-in, no credentials required
 - **Row Level Security** — Every table has RLS policies scoping data to `auth.uid()`
 - **No exposed secrets** — Only the public anon key is used client-side
 - **Database indexes** — Optimized queries on user_id, status, due_date, task_id
 
 ### Quality
+
 - Zero `any` types — full strict TypeScript with generated Supabase types
 - `React.memo`, `useMemo`, `useCallback` applied throughout
 - Lazy-loaded heavy components (TaskModal, TeamPanel)
@@ -79,6 +84,7 @@ _Add screenshots here after deployment._
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js 20+
 - A [Supabase](https://supabase.com) project (free tier)
 
@@ -131,19 +137,19 @@ Open [http://localhost:5173](http://localhost:5173).
 
 ## Available Scripts
 
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Start dev server |
-| `npm run build` | TypeScript check + production build |
-| `npm run typecheck` | Run TypeScript compiler check |
-| `npm run lint` | ESLint with zero-warning enforcement |
-| `npm run format` | Format all files with Prettier |
-| `npm run format:check` | Check formatting without writing |
-| `npm run test` | Run unit tests |
-| `npm run test:watch` | Run tests in watch mode |
-| `npm run test:coverage` | Run tests with coverage report |
-| `npm run test:ui` | Open Vitest UI |
-| `npm run e2e` | Run Playwright E2E tests |
+| Script                  | Description                          |
+| ----------------------- | ------------------------------------ |
+| `npm run dev`           | Start dev server                     |
+| `npm run build`         | TypeScript check + production build  |
+| `npm run typecheck`     | Run TypeScript compiler check        |
+| `npm run lint`          | ESLint with zero-warning enforcement |
+| `npm run format`        | Format all files with Prettier       |
+| `npm run format:check`  | Check formatting without writing     |
+| `npm run test`          | Run unit tests                       |
+| `npm run test:watch`    | Run tests in watch mode              |
+| `npm run test:coverage` | Run tests with coverage report       |
+| `npm run test:ui`       | Open Vitest UI                       |
+| `npm run e2e`           | Run Playwright E2E tests             |
 
 ---
 
@@ -160,6 +166,7 @@ activity_log       ← Auto-generated activity timeline (action, metadata)
 ```
 
 All tables have:
+
 - UUID primary keys
 - `user_id` foreign key to `auth.users`
 - RLS policies restricting access to the owning user
@@ -169,27 +176,27 @@ All tables have:
 
 ## CI/CD Pipelines
 
-| Workflow | Trigger | Purpose |
-|----------|---------|---------|
-| `ci.yml` | Push/PR to main | TypeScript → ESLint → Prettier → Tests → Build |
-| `e2e.yml` | Push to main | Playwright E2E tests |
-| `security.yml` | Push to main + weekly | npm audit + TruffleHog secret scanning |
-| `codeql.yml` | Push/PR + weekly | GitHub CodeQL static analysis |
-| `lighthouse.yml` | After Vercel deploy | Performance, accessibility, SEO audit |
-| `stale.yml` | Daily | Auto-label stale issues/PRs |
+| Workflow         | Trigger               | Purpose                                        |
+| ---------------- | --------------------- | ---------------------------------------------- |
+| `ci.yml`         | Push/PR to main       | TypeScript → ESLint → Prettier → Tests → Build |
+| `e2e.yml`        | Push to main          | Playwright E2E tests                           |
+| `security.yml`   | Push to main + weekly | npm audit + TruffleHog secret scanning         |
+| `codeql.yml`     | Push/PR + weekly      | GitHub CodeQL static analysis                  |
+| `lighthouse.yml` | After Vercel deploy   | Performance, accessibility, SEO audit          |
+| `stale.yml`      | Daily                 | Auto-label stale issues/PRs                    |
 
 ---
 
 ## Architecture Decisions
 
-| Decision | Rationale |
-|----------|-----------|
-| **@dnd-kit** over react-beautiful-dnd | Actively maintained, first-class TypeScript, smaller bundle, flexible collision detection |
-| **Zustand** for UI state | Minimal boilerplate, no providers needed, excellent TS inference, surgical re-renders via selectors |
-| **TanStack Query** for server state | Automatic cache invalidation, optimistic updates with rollback, stale-while-revalidate |
-| **Anonymous auth** | Zero-friction UX — user gets a board instantly, RLS handles data isolation |
-| **Tailwind v4** | CSS-first configuration, faster builds, native nesting, smaller output |
-| **Lazy loading** for modals | TaskModal and TeamPanel are code-split — keeps initial bundle under 100KB gzipped |
+| Decision                              | Rationale                                                                                           |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| **@dnd-kit** over react-beautiful-dnd | Actively maintained, first-class TypeScript, smaller bundle, flexible collision detection           |
+| **Zustand** for UI state              | Minimal boilerplate, no providers needed, excellent TS inference, surgical re-renders via selectors |
+| **TanStack Query** for server state   | Automatic cache invalidation, optimistic updates with rollback, stale-while-revalidate              |
+| **Anonymous auth**                    | Zero-friction UX — user gets a board instantly, RLS handles data isolation                          |
+| **Tailwind v4**                       | CSS-first configuration, faster builds, native nesting, smaller output                              |
+| **Lazy loading** for modals           | TaskModal and TeamPanel are code-split — keeps initial bundle under 100KB gzipped                   |
 
 ## Tradeoffs & Future Improvements
 
