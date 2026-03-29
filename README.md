@@ -9,7 +9,7 @@ A production-quality Kanban task board with drag-and-drop, team collaboration, a
 
 ## Live Demo
 
-> **[playboard.vercel.app](https://playboard.vercel.app)** _(update after deploy)_
+> **[sde-dun.vercel.app](https://sde-dun.vercel.app)**
 
 ## Screenshots
 
@@ -91,8 +91,8 @@ _Add screenshots here after deployment._
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/playboard.git
-cd playboard
+git clone https://github.com/MILTONADINA/SDE.git
+cd SDE
 npm install
 ```
 
