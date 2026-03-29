@@ -17,7 +17,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
-      - run: npm ci
+      - run: npm install
       - name: npm audit
         run: npm audit --audit-level=moderate
       - name: Check for secrets in code
